@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = "AIzaSyDd5o_3QfH_IaBqD0X1q-rBCCT1BHTkNC4";
+const GEMINI_API_KEY = "AQ.Ab8RN6I-Mv1KSBFLQEnjCJwGx1crUJeHseOnnP53OEUAoICc3w";
 
 async function generateAIRecipe() {
     const btn = document.querySelector('#ai-chef-modal .btn-primary') || document.getElementById('btn-ai-chef');
