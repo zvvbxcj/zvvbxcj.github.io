@@ -4629,11 +4629,10 @@ function checkAuthState() {
     });
 }
 
-// Функции показа экранов
 function showMaintenanceScreen(msg) {
     document.getElementById('maintenance-overlay').style.display = 'flex';
     document.getElementById('banned-overlay').style.display = 'none';
-    document.getElementById('app-container').style.display = 'none'; // Скрываем основное приложение
+    document.getElementById('app-container').style.display = 'none';
     if(msg) document.getElementById('maint-timer-display').innerText = msg;
 }
 
@@ -5863,19 +5862,6 @@ async function checkSystemStatus(uid) {
                     return false; 
                 }
             }
-
-            // 2. READ ONLY (Уведомляем и ставим флаг)
-            if (status === 'readonly') {
-                if (uid !== ADMIN_UID) {
-                    showToast("🔵 Режим 'Только чтение'. Сохранение отключено.", "info");
-                    window.isReadOnlyMode = true; // Используй этот флаг в saveData()
-                }
-            }
-
-            // 3. OVERLOAD (Просто предупреждение)
-            if (status === 'overload') {
-                showToast("🔴 Высокая нагрузка. Возможны задержки.", "warning");
-            }
             
             // Сброс флага если Online
             if (status === 'online') {
@@ -5918,7 +5904,6 @@ function showMaintenanceScreen(type) {
         document.getElementById('maint-retry-btn').style.display = 'none'; // Скрываем кнопку "Проверить" для забаненных
     } else {
         screen.classList.remove('banned-mode');
-        // Стандартный текст уже в HTML
     }
 }
 
