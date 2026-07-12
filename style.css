@@ -1,4 +1,4 @@
-        /* --- Base Styles and Variables (Dark Theme Default) --- */
+/* --- Base Styles and Variables (Dark Theme Default) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
 
         :root {
@@ -1960,6 +1960,74 @@ adsgram-task {
     margin-right: 12px;
     background: var(--surface-light);
 }
+
+/* --- "Порча" продукта: контейнер + прогрессивные фильтры/анимации по мере приближения срока --- */
+.decay-visual {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    margin-right: 12px;
+}
+.decay-visual .inventory-img,
+.decay-visual .item-icon {
+    margin-right: 0;
+    transition: filter 0.6s ease;
+}
+
+/* 3-6 дней: продукт начинает слегка блекнуть */
+.decay-visual.decay-aging .inventory-img,
+.decay-visual.decay-aging .item-icon {
+    filter: grayscale(20%) saturate(85%) brightness(97%);
+}
+
+/* 1-2 дня: заметно тускнеет, лёгкий болезненный оттенок */
+.decay-visual.decay-soon .inventory-img,
+.decay-visual.decay-soon .item-icon {
+    filter: grayscale(45%) saturate(65%) hue-rotate(-8deg) brightness(92%);
+}
+
+/* Сегодня последний день: пульсирует, как будто просит съесть его */
+@keyframes decayPulseToday {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+.decay-visual.decay-today .inventory-img,
+.decay-visual.decay-today .item-icon {
+    filter: grayscale(55%) saturate(55%) hue-rotate(-10deg) brightness(88%);
+}
+.decay-visual.decay-today {
+    animation: decayPulseToday 1.3s ease-in-out infinite;
+}
+
+/* Просрочено: сильно "болеет", трясётся и покрывается пятнами плесени */
+@keyframes decayShakeExpired {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-4deg); }
+    40% { transform: rotate(3deg); }
+    60% { transform: rotate(-3deg); }
+    80% { transform: rotate(2deg); }
+}
+.decay-visual.decay-expired .inventory-img,
+.decay-visual.decay-expired .item-icon {
+    filter: grayscale(80%) saturate(35%) hue-rotate(65deg) brightness(78%) contrast(105%);
+}
+.decay-visual.decay-expired {
+    animation: decayShakeExpired 2.4s ease-in-out infinite;
+}
+.decay-visual.decay-expired::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 22% 28%, rgba(90,110,40,0.65) 0 16%, transparent 17%),
+        radial-gradient(circle at 68% 62%, rgba(70,60,25,0.6) 0 20%, transparent 21%),
+        radial-gradient(circle at 42% 82%, rgba(100,115,55,0.5) 0 12%, transparent 13%),
+        radial-gradient(circle at 82% 22%, rgba(80,90,45,0.45) 0 10%, transparent 11%);
+    mix-blend-mode: multiply;
+}
+
 
 /* --- Кнопка раскрытия подсказок --- */
 .suggestion-toggle-btn {

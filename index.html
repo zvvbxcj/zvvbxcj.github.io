@@ -5,7 +5,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script> 
 
     <script src="ads.js"></script>
-    <script src="scripts.js"></script>
+    <script src="recipes.js"></script>
     <script src="translations.js"></script>
     <script src="allergy.js"></script>
     <script src="ai_chef.js"></script>
@@ -3101,11 +3101,8 @@ adsgram-task {
                     </div>
 
                     <div class="header-actions">
-                        <button id="add-product-header-btn" onclick="showModal('add-product-modal')">
+                        <button id="add-product-header-btn" onclick="showModal('add-choice-modal')">
                             <i class="fas fa-plus"></i>
-                        </button>
-                        <button id="ai-scan-header-btn" onclick="openAiScanCamera()" title="Сканировать продукты через ИИ">
-                            <i class="fas fa-wand-magic-sparkles"></i>
                         </button>
                         <button id="add-shopping-header-btn" onclick="showModal('add-shopping-modal')">
                             <i class="fas fa-cart-plus"></i>
@@ -3198,7 +3195,7 @@ adsgram-task {
                     <div id="inventory-empty" style="text-align: center; margin-top: 50px; display: none;">
                         <i class="fas fa-box-open" style="font-size: 3em; color: var(--text-secondary); opacity: 0.5; margin-bottom: 10px;"></i>
                         <p data-translate="InventoryEmptyText">Ваш холодильник пуст. Самое время сходить в магазин!</p>
-                        <button class="btn btn-primary" onclick="showModal('add-product-modal')" style="width: auto; margin: 20px auto 0;" data-translate="AddFirstProductButton">Добавить продукт</button>
+                        <button class="btn btn-primary" onclick="showModal('add-choice-modal')" style="width: auto; margin: 20px auto 0;" data-translate="AddFirstProductButton">Добавить продукт</button>
                     </div>
 
                 </section>
@@ -3455,6 +3452,31 @@ adsgram-task {
                 </div>
             </div>
 
+        </div>
+
+        <div id="add-choice-modal" class="modal" onclick="if(event.target.id === 'add-choice-modal') hideModal('add-choice-modal')">
+            <div class="modal-content" style="max-width: 380px;">
+                <div class="modal-header">
+                    <h4 data-translate="AddChoiceTitle">Добавить продукт</h4>
+                    <span class="modal-close" onclick="hideModal('add-choice-modal')"><i class="fas fa-times"></i></span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap: 12px; padding: 4px 0 8px;">
+                    <button type="button" class="btn btn-secondary add-choice-option" onclick="hideModal('add-choice-modal'); showModal('add-product-modal')" style="display:flex; align-items:center; gap:14px; text-align:left; padding: 16px;">
+                        <span style="width:44px; height:44px; flex-shrink:0; border-radius:12px; background: var(--surface-light); display:flex; align-items:center; justify-content:center; font-size:1.3em; color: var(--primary);"><i class="fas fa-pen"></i></span>
+                        <span>
+                            <span style="display:block; font-weight:600; color: var(--text-primary);" data-translate="AddChoiceManualTitle">Вручную</span>
+                            <span style="display:block; font-size:0.85em; color: var(--text-secondary);" data-translate="AddChoiceManualDesc">Заполнить карточку продукта самостоятельно</span>
+                        </span>
+                    </button>
+                    <button type="button" class="btn btn-secondary add-choice-option" onclick="hideModal('add-choice-modal'); openAiScanCamera()" style="display:flex; align-items:center; gap:14px; text-align:left; padding: 16px;">
+                        <span style="width:44px; height:44px; flex-shrink:0; border-radius:12px; background: var(--surface-light); display:flex; align-items:center; justify-content:center; font-size:1.3em; color: var(--primary);"><i class="fas fa-wand-magic-sparkles"></i></span>
+                        <span>
+                            <span style="display:block; font-weight:600; color: var(--text-primary);" data-translate="AddChoiceScanTitle">Через камеру (ИИ)</span>
+                            <span style="display:block; font-size:0.85em; color: var(--text-secondary);" data-translate="AddChoiceScanDesc">Сфотографировать продукт, пакет или чек</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div id="add-product-modal" class="modal" onclick="if(event.target.id === 'add-product-modal') hideModal('add-product-modal')">
@@ -4629,10 +4651,11 @@ function checkAuthState() {
     });
 }
 
+// Функции показа экранов
 function showMaintenanceScreen(msg) {
     document.getElementById('maintenance-overlay').style.display = 'flex';
     document.getElementById('banned-overlay').style.display = 'none';
-    document.getElementById('app-container').style.display = 'none';
+    document.getElementById('app-container').style.display = 'none'; // Скрываем основное приложение
     if(msg) document.getElementById('maint-timer-display').innerText = msg;
 }
 
@@ -5359,6 +5382,16 @@ function isExpired(dateString) {
     return getDaysUntilExpiry(dateString) < 0;
 }
 
+// --- "ПОРЧА" ПРОДУКТА: визуальная деградация карточки по мере приближения срока ---
+// fresh: >6 дней, aging: 3-6, soon: 1-2, today: 0, expired: < 0
+function getDecayStage(days) {
+    if (days < 0) return 'expired';
+    if (days === 0) return 'today';
+    if (days <= 2) return 'soon';
+    if (days <= 6) return 'aging';
+    return 'fresh';
+}
+
 function updateStats() {
     if (!currentUser || userHistory.length === 0) {
         document.getElementById('stats-container').innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary)">Пока нет статистики. Приготовьте что-нибудь!</div>';
@@ -5487,9 +5520,10 @@ else if (filter !== 'all') items = items.filter(p => (p.category || 'Other').toL
         const dynamicColor = getExpiryColor(days); 
         const statusText = getExpiryStatus(p.expiryDate); 
         const categoryIcon = getCategoryIcon(p.category);
+        const decayStage = getDecayStage(days);
         const imgHtml = p.image 
-            ? `<img src="${p.image}" class="inventory-img">`
-            : `<div class="item-icon" style="color: ${categoryIcon.color};">${categoryIcon.icon}</div>`;
+            ? `<div class="decay-visual decay-${decayStage}"><img src="${p.image}" class="inventory-img"></div>`
+            : `<div class="decay-visual decay-${decayStage}"><div class="item-icon" style="color: ${categoryIcon.color};">${categoryIcon.icon}</div></div>`;
 
         // Рендер карточки товара
         list.innerHTML += `
@@ -5862,6 +5896,19 @@ async function checkSystemStatus(uid) {
                     return false; 
                 }
             }
+
+            // 2. READ ONLY (Уведомляем и ставим флаг)
+            if (status === 'readonly') {
+                if (uid !== ADMIN_UID) {
+                    showToast("🔵 Режим 'Только чтение'. Сохранение отключено.", "info");
+                    window.isReadOnlyMode = true; // Используй этот флаг в saveData()
+                }
+            }
+
+            // 3. OVERLOAD (Просто предупреждение)
+            if (status === 'overload') {
+                showToast("🔴 Высокая нагрузка. Возможны задержки.", "warning");
+            }
             
             // Сброс флага если Online
             if (status === 'online') {
@@ -5904,6 +5951,7 @@ function showMaintenanceScreen(type) {
         document.getElementById('maint-retry-btn').style.display = 'none'; // Скрываем кнопку "Проверить" для забаненных
     } else {
         screen.classList.remove('banned-mode');
+        // Стандартный текст уже в HTML
     }
 }
 
