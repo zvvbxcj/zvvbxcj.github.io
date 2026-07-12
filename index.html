@@ -10,6 +10,7 @@
     <script src="allergy.js"></script>
     <script src="body.js"></script>
     <script src="ai_chef.js"></script>
+    <script src="ai_scan.js"></script>
 
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -3108,6 +3109,9 @@ adsgram-task {
                     <div class="header-actions">
                         <button id="add-product-header-btn" onclick="showModal('add-product-modal')">
                             <i class="fas fa-plus"></i>
+                        </button>
+                        <button id="ai-scan-header-btn" onclick="openAiScanCamera()" title="Сканировать продукты через ИИ">
+                            <i class="fas fa-wand-magic-sparkles"></i>
                         </button>
                         <button id="add-shopping-header-btn" onclick="showModal('add-shopping-modal')">
                             <i class="fas fa-cart-plus"></i>
@@ -8859,8 +8863,10 @@ async function watchAdAction(type) {
 
 let cameraStream = null;
 let currentFacingMode = 'environment'; // 'user' (фронтальная) или 'environment' (задняя)
+let cameraCaptureMode = 'product'; // 'product' (фото для карточки товара) или 'ai-scan' (распознавание ИИ)
 
-async function openCameraInterface() {
+async function openCameraInterface(mode) {
+    cameraCaptureMode = mode === 'ai-scan' ? 'ai-scan' : 'product';
     const modal = document.getElementById('camera-interface-modal');
     const video = document.getElementById('camera-video-stream');
     
@@ -8932,6 +8938,15 @@ function capturePhotoFromStream() {
         // Получаем Base64 изображение
         // Качество 0.8 для оптимизации размера
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+        if (cameraCaptureMode === 'ai-scan') {
+            // Режим ИИ-скана: кадр не идёт в форму товара, а отправляется на распознавание
+            closeCameraInterface();
+            if (typeof handleAiScanCapture === 'function') {
+                handleAiScanCapture(dataUrl);
+            }
+            return;
+        }
         
         // Сохраняем в глобальную переменную (используется при сохранении товара)
         currentImageBase64 = dataUrl;
@@ -8956,8 +8971,8 @@ async function switchCameraFacing() {
         cameraStream.getTracks().forEach(track => track.stop());
     }
     
-    // Перезапускаем камеру с новым режимом
-    await openCameraInterface(); 
+    // Перезапускаем камеру с новым режимом (сохраняя текущий режим захвата: фото товара или ИИ-скан)
+    await openCameraInterface(cameraCaptureMode); 
 }
 
 checkAuthState();
@@ -12965,6 +12980,28 @@ function fallbackCopy(text) {
         <p style="font-size: 0.8em; color: var(--text-secondary); margin-top: 15px;">
             Выполните задание, чтобы получить бонус к уровню!
         </p>
+    </div>
+</div>
+
+<div id="ai-scan-review-modal" class="modal" style="z-index: 10060;">
+    <div class="modal-content" style="max-width: 500px; max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="modal-header">
+            <h4><i class="fas fa-wand-magic-sparkles"></i> Найденные продукты</h4>
+            <span class="modal-close" onclick="closeAiScanReview()"><i class="fas fa-times"></i></span>
+        </div>
+
+        <div id="ai-scan-loading" style="text-align:center; padding: 30px 10px; color: var(--text-secondary);">
+            <i class="fas fa-spinner fa-spin" style="font-size:2em; margin-bottom:10px; display:block; color: var(--primary);"></i>
+            ИИ рассматривает фото...
+        </div>
+
+        <div id="ai-scan-error" style="display:none; text-align:center; color: var(--error); padding: 20px;"></div>
+
+        <div id="ai-scan-list" style="overflow-y:auto; flex:1; display:none;"></div>
+
+        <button id="ai-scan-confirm-btn" class="btn btn-primary" style="display:none; margin-top: 15px;" onclick="confirmAiScanAdd()">
+            <i class="fas fa-check"></i> Добавить выбранные
+        </button>
     </div>
 </div>
 
