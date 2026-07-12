@@ -12391,7 +12391,52 @@ function fallbackCopy(text) {
         localStorage.setItem('axio_tutorial_seen', 'true');
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     }
-</script>
+</script> <div id="donation-modal" class="modal" onclick="if(event.target.id === 'donation-modal') hideModal('donation-modal')">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4>Поддержать разработчика</h4>
+            <span class="modal-close" onclick="hideModal('donation-modal')"><i class="fas fa-times"></i></span>
+        </div>
+        
+        <p style="color:var(--text-secondary); margin-bottom: 20px; text-align: center;">
+            Axio развивается благодаря вам! Выберите удобный способ:
+        </p>
+
+        <div class="donation-option" onclick="window.open('https://www.donationalerts.com/r/maks_a779', '_blank')">
+            <div style="display:flex; align-items:center;">
+                <div class="donation-icon" style="color: #F59E0B;"><i class="fas fa-credit-card"></i></div>
+                <div>
+                    <div style="font-weight:bold; color:var(--text-primary);">Карта / DonationAlerts</div>
+                    <div style="font-size:0.8em; color:var(--text-secondary);">RUB, USD, EUR</div>
+                </div>
+            </div>
+            <i class="fas fa-external-link-alt" style="color:var(--text-secondary);"></i>
+        </div>
+
+        <div class="donation-option" onclick="toggleCryptoDetails()">
+    <div style="display:flex; align-items:center;">
+        <div class="donation-icon" style="color: #0088cc;"><i class="fas fa-gem"></i></div>
+        <div>
+            <div style="font-weight:bold; color:var(--text-primary);">TON / USDT (TON)</div>
+            <div style="font-size:0.8em; color:var(--text-secondary);">Криптовалюта</div>
+        </div>
+    </div>
+    <i id="crypto-toggle-icon" class="fas fa-chevron-down" style="color:var(--text-secondary); transition: 0.3s;"></i>
+</div>
+
+<div id="crypto-details" style="display:none; animation: fadeIn 0.3s; padding-top: 5px;">
+    <div style="font-size:0.8em; color:var(--text-secondary); margin-bottom:5px;">Network: TON (The Open Network)</div>
+    <div class="crypto-address-box">
+        <span id="usdt-wallet" style="flex:1; overflow:hidden; text-overflow:ellipsis; font-size: 0.85em;">UQBM0cf0NQEAo1Rio2qv6OuzPr_1qtRn84DK52yKp_WSvxAI</span>
+        <i class="far fa-copy" style="cursor:pointer; color:var(--primary); padding: 5px;" onclick="event.stopPropagation(); copyCrypto(document.getElementById('usdt-wallet').innerText)"></i>
+    </div>
+    <div style="text-align:center; margin-top:10px; font-size:0.75em; color:var(--warning);">
+        Отправляйте только TON или токены в сети TON.
+    </div>
+</div>
+
+    </div>
+</div>
 
 <div id="tutorial-modal" class="modal">
     <div class="modal-content">
