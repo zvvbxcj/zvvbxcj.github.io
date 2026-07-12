@@ -5,7 +5,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script> 
 
     <script src="ads.js"></script>
-    <script src="recipes.js"></script>
+    <script src="scripts.js"></script>
     <script src="translations.js"></script>
     <script src="allergy.js"></script>
     <script src="ai_chef.js"></script>
@@ -34,7 +34,7 @@
     <script src="https://js.hcaptcha.com/1/api.js?render=explicit" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+    
 <script>
     // Глобальная функция проверки среды
     window.isTelegramEnv = function() {
@@ -273,7 +273,10 @@
             <div class="header">
                 <div class="header-top">
                     <div class="greeting-container">
-                        <img src="" id="header-avatar" class="header-avatar-small" onclick="navigateTo('profile')" alt="Avatar">
+                        <div id="pet-avatar-wrap" class="pet-avatar-wrap" onclick="navigateTo('profile')">
+                            <img src="" id="header-avatar" class="header-avatar-small" alt="Avatar">
+                            <span id="pet-mood-badge" class="pet-mood-badge"></span>
+                        </div>
                         <div class="greeting">
                             <h2 id="greeting-title" data-translate="GreetingTitle">Привет, Шеф!</h2>
                             <p id="inventory-status" data-translate="InventoryStatus">Инвентарь в порядке</p>
@@ -535,8 +538,10 @@
                     <div class="profile-card">
                         <div class="profile-image-container" onclick="showModal('avatar-modal')">
                             <img src="" id="profile-avatar-img" class="profile-avatar-img" alt="Profile Avatar">
+                            <span id="pet-mood-badge-profile" class="pet-mood-badge pet-mood-badge-lg"></span>
                             <button class="edit-avatar-btn"><i class="fas fa-camera"></i></button>
                         </div>
+                        <p id="pet-mood-text" style="text-align:center; color: var(--text-secondary); font-size: 0.9em; margin: -8px 0 12px;"></p>
                         <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px;">
     <h4 id="profile-name" style="margin: 0;">Имя пользователя</h4>
     <button onclick="document.getElementById('new-user-name').value = currentUser.name; showModal('edit-name-modal')" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.9em;">
@@ -651,8 +656,8 @@
                     <button type="button" class="btn btn-secondary add-choice-option" onclick="hideModal('add-choice-modal'); openAiScanCamera()" style="display:flex; align-items:center; gap:14px; text-align:left; padding: 16px;">
                         <span style="width:44px; height:44px; flex-shrink:0; border-radius:12px; background: var(--surface-light); display:flex; align-items:center; justify-content:center; font-size:1.3em; color: var(--primary);"><i class="fas fa-wand-magic-sparkles"></i></span>
                         <span>
-                            <span style="display:block; font-weight:600; color: var(--text-primary);" data-translate="AddChoiceScanTitle">Через камеру</span>
-                            <span style="display:block; font-size:0.85em; color: var(--text-secondary);" data-translate="AddChoiceScanDesc">Сфотографировать продукт или чек</span>
+                            <span style="display:block; font-weight:600; color: var(--text-primary);" data-translate="AddChoiceScanTitle">Через камеру (ИИ)</span>
+                            <span style="display:block; font-size:0.85em; color: var(--text-secondary);" data-translate="AddChoiceScanDesc">Сфотографировать продукт, пакет или чек</span>
                         </span>
                     </button>
                 </div>
@@ -930,6 +935,8 @@
                     <option value="ru">Русский</option>
                     <option value="en">English</option>
                     <option value="it">Italiano</option>
+                    <option value="es">Español (AR)</option>
+                    <option value="zh">中文</option>
                 </select>
             </div>
         </div>
@@ -5111,6 +5118,61 @@ document.addEventListener('DOMContentLoaded', () => { renderActiveAllergensInSet
     }
 
     document.getElementById('header-avatar').src = currentUser.avatar || avatarCollection[0];
+    applyPetMood(expiredCount, warningCount);
+}
+
+// --- "ПИТОМЕЦ": настроение аватара зависит от состояния холодильника + активности пользователя ---
+function getPetMood(expiredCount, warningCount) {
+    let score = 100;
+    score -= expiredCount * 18;
+    score -= warningCount * 6;
+
+    let daysSinceActivity = null;
+    if (userHistory && userHistory.length > 0) {
+        const lastDate = new Date(userHistory[userHistory.length - 1].date);
+        daysSinceActivity = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
+    }
+
+    if (daysSinceActivity === null) score -= 10;
+    else if (daysSinceActivity <= 1) score += 15;
+    else if (daysSinceActivity <= 3) score += 5;
+    else if (daysSinceActivity > 7) score -= 15;
+    else if (daysSinceActivity > 14) score -= 25;
+
+    score = Math.max(0, Math.min(100, score));
+
+    if (score >= 85) return 'great';
+    if (score >= 65) return 'good';
+    if (score >= 45) return 'meh';
+    if (score >= 20) return 'sad';
+    return 'sick';
+}
+
+const PET_MOOD_BADGES = { great: '✨', good: '🙂', meh: '😐', sad: '😟', sick: '🤒' };
+const PET_MOOD_TEXT_KEYS = { great: 'PetMoodGreat', good: 'PetMoodGood', meh: 'PetMoodMeh', sad: 'PetMoodSad', sick: 'PetMoodSick' };
+
+function applyPetMood(expiredCount, warningCount) {
+    const mood = getPetMood(expiredCount, warningCount);
+    const moodClasses = ['pet-mood-great', 'pet-mood-good', 'pet-mood-meh', 'pet-mood-sad', 'pet-mood-sick'];
+
+    const wrap = document.getElementById('pet-avatar-wrap');
+    const profileContainer = document.querySelector('.profile-image-container');
+    const badge = document.getElementById('pet-mood-badge');
+    const badgeProfile = document.getElementById('pet-mood-badge-profile');
+    const moodText = document.getElementById('pet-mood-text');
+
+    [wrap, profileContainer].forEach(el => {
+        if (!el) return;
+        moodClasses.forEach(c => el.classList.remove(c));
+        el.classList.add(`pet-mood-${mood}`);
+    });
+
+    if (badge) badge.textContent = PET_MOOD_BADGES[mood];
+    if (badgeProfile) badgeProfile.textContent = PET_MOOD_BADGES[mood];
+    if (moodText) {
+        const key = PET_MOOD_TEXT_KEYS[mood];
+        moodText.textContent = (translations[currentLang] && translations[currentLang][key]) || '';
+    }
 }
 
 // --- New Logic for Sliders ---
