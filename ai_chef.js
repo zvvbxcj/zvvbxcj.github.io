@@ -36,7 +36,7 @@ async function generateAIRecipe() {
             }
         `;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -44,7 +44,8 @@ async function generateAIRecipe() {
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptText }] }],
                 generationConfig: {
-                    temperature: 0.7
+                    temperature: 0.7,
+                    responseMimeType: "application/json"
                 }
             })
         });
@@ -56,7 +57,12 @@ async function generateAIRecipe() {
         }
 
         const data = await response.json();
-        const jsonString = data.candidates[0].content.parts[0].text;
+        let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!jsonString) {
+            throw new Error('Пустой ответ от модели (возможно, сработал фильтр безопасности)');
+        }
+        // На случай если модель всё же обернёт ответ в ```json ... ```
+        jsonString = jsonString.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '');
         const recipe = JSON.parse(jsonString);
 
         if (content) {
