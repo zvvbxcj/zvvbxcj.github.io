@@ -8,15 +8,27 @@
     <script src="scripts.js"></script>
     <script src="translations.js"></script>
     <script src="allergy.js"></script>
-    <script src="body.js"></script>
     <script src="ai_chef.js"></script>
     <script src="ai_scan.js"></script>
+    <script src="achievements.js"></script>
+    <script src="firebase-config.js"></script>
 
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <script src="scanner.js?v=1"></script>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
 <script src="https://sad.adsgram.ai/js/adsgram-sdk.js"></script>
+
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Axio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://js.hcaptcha.com/1/api.js?render=explicit" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -3775,19 +3787,10 @@ adsgram-task {
         </div>
 
     </div>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
-    <script src="firebase-config.js"></script>
-    <script src="secrets.js"></script>
     
     <script>
         document.write('<script src="recipes.js?v=' + new Date().getTime() + '"><\/script>');
     </script>
-    
-    <script src="achievements.js"></script>
     
     <script>       
       // --- GLOBAL APP STATE ---
