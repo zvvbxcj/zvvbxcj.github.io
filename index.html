@@ -17,6 +17,25 @@
 <script src="scanner.js?v=1"></script>
 
 <script src="https://sad.adsgram.ai/js/adsgram-sdk.js"></script>
+
+    <!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106151362', 'ym');
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/106151362" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+
+<!-- /Yandex.Metrika counter -->
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Axio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://js.hcaptcha.com/1/api.js?render=explicit" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -3433,6 +3452,10 @@ adsgram-task {
 
 <div id="ut-embed" style="margin: 15px 0; border-radius: 12px; overflow: hidden;"></div>
 
+    <button class="btn coffee-btn" onclick="showModal('donation-modal')">
+        <i class="fas fa-mug-hot"></i> <span data-translate="BuyCoffeeBtn">Купить разработчику кофе</span>
+    </button>
+
     <button class="btn btn-secondary" onclick="logout()" style="width: 100%; margin-top: 10px;" data-translate="LogoutButton">Выйти</button>
 </div>
                 </section>
@@ -3801,6 +3824,7 @@ adsgram-task {
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <script src="firebase-config.js"></script>
+    <script src="secrets.js"></script>
     
     <script>
         document.write('<script src="recipes.js?v=' + new Date().getTime() + '"><\/script>');
@@ -12091,17 +12115,6 @@ async function runTest(type) {
                 Я проанализирую ваш инвентарь и предложу рецепт из того, что есть.
             </p>
             
-            <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:15px;">
-                <span style="color:var(--text-secondary); font-size:0.9em;">Сколько вариантов:</span>
-                <select id="ai-chef-count" class="styled-select" style="width:70px;">
-                    <option value="1" selected>1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-            </div>
-
             <button class="btn btn-primary" onclick="generateAIRecipe()" style="width: 100%; margin-bottom: 20px;">
                 <i class="fas fa-magic"></i> Придумать рецепт
             </button>
@@ -12371,7 +12384,49 @@ function fallbackCopy(text) {
         localStorage.setItem('axio_tutorial_seen', 'true');
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     }
-</script>  
+</script> <div id="donation-modal" class="modal" onclick="if(event.target.id === 'donation-modal') hideModal('donation-modal')">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4>Поддержать разработчика</h4>
+            <span class="modal-close" onclick="hideModal('donation-modal')"><i class="fas fa-times"></i></span>
+        </div>
+        
+        <p style="color:var(--text-secondary); margin-bottom: 20px; text-align: center;">
+            Axio развивается благодаря вам! Выберите удобный способ:
+        </p>
+
+        <div class="donation-option" onclick="window.open('https://www.donationalerts.com/r/maks_a779', '_blank')">
+            <div style="display:flex; align-items:center;">
+                <div class="donation-icon" style="color: #F59E0B;"><i class="fas fa-credit-card"></i></div>
+                <div>
+                    <div style="font-weight:bold; color:var(--text-primary);">Карта / DonationAlerts</div>
+                    <div style="font-size:0.8em; color:var(--text-secondary);">RUB, USD, EUR</div>
+                </div>
+            </div>
+            <i class="fas fa-external-link-alt" style="color:var(--text-secondary);"></i>
+        </div>
+
+        <div class="donation-option" onclick="toggleCryptoDetails()">
+    <div style="display:flex; align-items:center;">
+        <div class="donation-icon" style="color: #0088cc;"><i class="fas fa-gem"></i></div>
+        <div>
+            <div style="font-weight:bold; color:var(--text-primary);">TON / USDT (TON)</div>
+            <div style="font-size:0.8em; color:var(--text-secondary);">Криптовалюта</div>
+        </div>
+    </div>
+    <i id="crypto-toggle-icon" class="fas fa-chevron-down" style="color:var(--text-secondary); transition: 0.3s;"></i>
+</div>
+
+<div id="crypto-details" style="display:none; animation: fadeIn 0.3s; padding-top: 5px;">
+    <div style="font-size:0.8em; color:var(--text-secondary); margin-bottom:5px;">Network: TON (The Open Network)</div>
+    <div class="crypto-address-box">
+        <span id="usdt-wallet" style="flex:1; overflow:hidden; text-overflow:ellipsis; font-size: 0.85em;">UQBM0cf0NQEAo1Rio2qv6OuzPr_1qtRn84DK52yKp_WSvxAI</span>
+        <i class="far fa-copy" style="cursor:pointer; color:var(--primary); padding: 5px;" onclick="event.stopPropagation(); copyCrypto(document.getElementById('usdt-wallet').innerText)"></i>
+    </div>
+    <div style="text-align:center; margin-top:10px; font-size:0.75em; color:var(--warning);">
+        Отправляйте только TON или токены в сети TON.
+    </div>
+</div>
 
     </div>
 </div>
