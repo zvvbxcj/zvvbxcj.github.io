@@ -3357,22 +3357,6 @@ adsgram-task {
                 <section id="profile-section" class="section">
                     <h3><i class="fas fa-user"></i> <span data-translate="ProfileHeader">Профиль</span></h3>
 
-                   <div id="user-promo-modal" class="modal" onclick="if(event.target.id === 'user-promo-modal') hideModal('user-promo-modal')">
-    <div class="modal-content" style="max-width: 350px; text-align: center;">
-        <div class="modal-header">
-            <h4><i class="fas fa-ticket-alt" style="color: var(--accent);"></i> Активация кода</h4>
-            <span class="modal-close" onclick="hideModal('user-promo-modal')">&times;</span>
-        </div>
-        <p style="color: var(--text-secondary); margin-bottom: 15px;">Введите код, чтобы получить XP или секретные награды.</p>
-        
-        <input type="text" id="user-promo-input" class="styled-input" placeholder="Например: AXIO2026" style="text-align: center; font-size: 1.2em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px;">
-        
-        <button class="btn btn-primary" onclick="redeemUserCode()" style="background: linear-gradient(135deg, var(--accent), #d946ef);">
-            Активировать
-        </button>
-    </div>
-</div>
-
                    <button id="admin-btn" class="btn btn-secondary" onclick="openAdminPanel()" style="display: none; width: 100%; margin-top: 10px; border-color: #EF4444; color: #EF4444;">
     <i class="fas fa-shield-alt"></i> Панель Модератора
 </button>
@@ -3425,10 +3409,6 @@ adsgram-task {
     <i class="fas fa-chart-pie" style="color: var(--accent);"></i> <span>Статистика и Отчеты</span>
 </button>
 
-                        <button class="btn btn-secondary" onclick="showModal('user-promo-modal')" style="width: 100%; margin-top: 10px; border: 1px dashed var(--accent); color: var(--accent); background: rgba(139, 92, 246, 0.1);">
-    <i class="fas fa-gift"></i> Ввести промокод
-</button>
-
                         <div style="margin-top: 15px; padding: 0 5px; display: flex; flex-direction: column; gap: 10px;">
 
     <div class="ads-row-container">
@@ -3451,10 +3431,6 @@ adsgram-task {
     <span id="ads-watched-counter" style="display:none;">0</span>
 
 <div id="ut-embed" style="margin: 15px 0; border-radius: 12px; overflow: hidden;"></div>
-
-    <button class="btn coffee-btn" onclick="showModal('donation-modal')">
-        <i class="fas fa-mug-hot"></i> <span data-translate="BuyCoffeeBtn">Купить разработчику кофе</span>
-    </button>
 
     <button class="btn btn-secondary" onclick="logout()" style="width: 100%; margin-top: 10px;" data-translate="LogoutButton">Выйти</button>
 </div>
@@ -6377,56 +6353,6 @@ async function publishExistingRecipe(id) {
     }
 }
 
-// --- ФУНКЦИЯ АКТИВАЦИИ ПРОМОКОДА ---
-async function redeemUserCode() {
-    const input = document.getElementById('user-promo-input');
-    const code = input.value.trim().toUpperCase();
-    
-    if (!code) return showToast("Введите код", "warning");
-
-    const btn = event.target;
-    const oldText = btn.innerText;
-    btn.innerText = "Проверка...";
-    btn.disabled = true;
-
-    try {
-        const promoRef = db.collection('promo_codes').doc(code);
-        const doc = await promoRef.get();
-
-        if (!doc.exists) {
-            throw new Error("Неверный код");
-        }
-
-        const data = doc.data();
-        if (data.usedBy && data.usedBy.includes(currentUser.uid)) {
-            throw new Error("Вы уже активировали этот код");
-        }
-
-        // Начисляем награду (addXp внутри себя обновит Header)
-        addXp(data.reward);
-        
-        await promoRef.update({
-            usedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
-        });
-
-        showToast(`Код принят! +${data.reward} XP`, "success");
-        hideModal('user-promo-modal');
-        input.value = "";
-        triggerLevelUpEffect();
-        
-        // ВАЖНО: Принудительно обновляем профиль прямо сейчас, чтобы цифры сменились на глазах
-        updateProfile(); 
-
-    } catch (e) {
-        showToast(e.message, "error");
-        input.classList.add("error-shake");
-        setTimeout(() => input.classList.remove("error-shake"), 500);
-    } finally {
-        btn.innerText = oldText;
-        btn.disabled = false;
-    }
-}
-
 // --- ФУНКЦИИ ЭКСПОРТА МЕНЮ ---
 function getMealPlanText() {
     let text = "📅 *Мое меню на неделю (Axio)*\n\n";
@@ -7082,63 +7008,6 @@ async function submitBroadcast() {
         hideModal('admin-preview-modal');
         logAdmin(`Broadcast created: ${title}`);
     } catch(e) { showToast(e.message, "error"); }
-}
-
-function openAdminPromoModal() {
-    // Вставляем HTML в превью модалку (для экономии места)
-    const html = `
-        <h3>🎫 Управление Промокодами</h3>
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <input type="text" id="new-promo-code" placeholder="CODE2024" class="styled-input" style="text-transform:uppercase">
-            <input type="number" id="new-promo-xp" placeholder="XP" class="styled-input" style="width:80px">
-            <button class="btn btn-primary" onclick="createPromo()">Создать</button>
-        </div>
-        <div id="promo-list-container" style="max-height:300px; overflow-y:auto; border:1px solid var(--border-color); border-radius:8px; padding:10px;">
-            Загрузка...
-        </div>
-    `;
-    document.getElementById('admin-preview-content').innerHTML = html;
-    document.getElementById('btn-approve-preview').style.display = 'none';
-    document.getElementById('btn-reject-preview').style.display = 'none';
-    showModal('admin-preview-modal');
-    loadPromoListInModal();
-}
-
-async function createPromo() {
-    const code = document.getElementById('new-promo-code').value.toUpperCase().trim();
-    const xp = parseInt(document.getElementById('new-promo-xp').value);
-    if (!code || !xp) return showToast("Введите данные", "warning");
-    
-    await db.collection('promo_codes').doc(code).set({
-        reward: xp,
-        active: true,
-        created: new Date().toISOString(),
-        usedBy: []
-    });
-    showToast("Промокод создан", "success");
-    loadPromoListInModal();
-}
-
-async function loadPromoListInModal() {
-    const div = document.getElementById('promo-list-container');
-    const snap = await db.collection('promo_codes').orderBy('created', 'desc').get();
-    let h = '';
-    snap.forEach(doc => {
-        const d = doc.data();
-        h += `<div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #333">
-            <div><b>${doc.id}</b> <span style="color:var(--primary)">+${d.reward} XP</span> <small>(${d.usedBy?.length || 0} исп.)</small></div>
-            <i class="fas fa-trash" style="color:var(--error); cursor:pointer" onclick="deletePromo('${doc.id}')"></i>
-        </div>`;
-    });
-    div.innerHTML = h || "Нет кодов";
-}
-
-// Замените старый вызов showAdminModal('promo') на openAdminPromoModal() в HTML выше
-// Или добавьте это перенаправление:
-const oldShowAdminModal = window.showAdminModal;
-window.showAdminModal = function(type) {
-    if (type === 'promo') openAdminPromoModal();
-    else if (oldShowAdminModal) oldShowAdminModal(type);
 }
 
 function updateAdminStats() {
@@ -10582,53 +10451,6 @@ async function sendBroadcast() {
     }
 }
 
-// 4. ПРОМОКОДЫ
-async function createPromoCode() {
-    const code = document.getElementById('promo-code-input').value.toUpperCase().trim();
-    const xp = parseInt(document.getElementById('promo-xp-input').value);
-    
-    if(!code || !xp) return;
-    
-    try {
-        await db.collection('promo_codes').doc(code).set({
-            reward: xp,
-            active: true,
-            created: new Date().toISOString(),
-            usedBy: []
-        });
-        showToast(`Код ${code} на ${xp} XP создан!`, "success");
-        loadPromoCodes();
-    } catch(e) { showToast(e.message, "error"); }
-}
-
-async function loadPromoCodes() {
-    const div = document.getElementById('promo-codes-list-modal');
-    div.innerHTML = "Загрузка...";
-    const snap = await db.collection('promo_codes').get();
-    let html = '';
-    snap.forEach(doc => {
-        const d = doc.data();
-        html += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <b>${doc.id}</b> (${d.reward} XP) 
-            <i class="fas fa-trash" style="color:red; cursor:pointer" onclick="deletePromo('${doc.id}')"></i>
-        </div>`;
-    });
-    div.innerHTML = html || "Нет кодов";
-}
-
-async function deletePromo(code) {
-    if(confirm("Удалить код?")) {
-        await db.collection('promo_codes').doc(code).delete();
-        loadPromoCodes();
-    }
-}
-
-// Вспомогательная функция для открытия модалок из меню
-function showAdminModal(type) {
-    if(type === 'promo') { showModal('admin-promo-modal'); loadPromoCodes(); }
-    if(type === 'broadcast') { alert("Скоро будет!"); }
-}
-
 // 6. UTILS
 // --- УЛУЧШЕННАЯ СИСТЕМА ЛОГОВ ---
 function logAdmin(msg) {
@@ -10811,30 +10633,6 @@ async function adminAddXpAll() {
     await batch.commit();
     logAdmin(`Начислено 100 XP для ${count} пользователей.`);
     showToast("Раздача завершена!", "success");
-}
-
-// 6. Generate Promo Batch
-async function generatePromoBatch() {
-    logAdmin("Генерация 10 промокодов...");
-    const batch = db.batch();
-    const codes = [];
-    
-    for(let i=0; i<10; i++) {
-        const code = "GIFT-" + Math.random().toString(36).substr(2, 6).toUpperCase();
-        const ref = db.collection('promo_codes').doc(code);
-        batch.set(ref, {
-            reward: 500,
-            active: true,
-            usedBy: [],
-            created: new Date().toISOString()
-        });
-        codes.push(code);
-    }
-    
-    await batch.commit();
-    
-    let html = `<h5>Создано 10 кодов (500 XP):</h5><textarea style="width:100%; height:150px;">${codes.join('\n')}</textarea>`;
-    showAdminResultModal("Пакет промокодов", html);
 }
 
 // 7. Reset Economy (Dangerous)
@@ -11795,7 +11593,6 @@ async function renderDetailedStats() {
 
             // --- СИСТЕМА ---
             '📩 Жалоб/Отзывов': feedbackSnap.size,
-            '🎟 Активных промокодов': promoSnap.size,
             '💾 Размер кэша (Users)': (JSON.stringify(allUsersCache).length / 1024).toFixed(2) + ' KB',
             '⚡ Пинг чтения': 'OK' // Можно вставить реальный замер, если есть функция
         };
