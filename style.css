@@ -1235,27 +1235,6 @@ adsgram-task {
     .admin-stats-row { grid-template-columns: 1fr 1fr; }
 }
 
-/* --- Адаптив для десктопа/планшетов: приложение остаётся мобильной "карточкой" по центру --- */
-@media (min-width: 700px) {
-    html, body {
-        background-color: var(--border-color);
-    }
-    #app-container {
-        max-width: 480px;
-        height: 100vh;
-        margin: 0 auto;
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-        border-left: 1px solid var(--border-color);
-        border-right: 1px solid var(--border-color);
-    }
-    .nav-bar {
-        left: 50%;
-        width: 100%;
-        max-width: 480px;
-        transform: translateX(-50%);
-    }
-}
-
 /* --- Стили для Админ-панели (из файла 46) --- */
 .admin-tabs {
     display: flex;
@@ -2590,7 +2569,7 @@ adsgram-task {
 .main-content {
     flex-grow: 1; 
     overflow-y: auto; 
-    padding: 20px 20px 90px; /* нижний запас, чтобы контент не прятался под fixed-навигацией */
+    padding: 20px; 
     max-width: 1200px; /* Оптимальная ширина для десктопа/ТВ */
     margin: 0 auto;
     width: 100%;
@@ -2645,7 +2624,109 @@ adsgram-task {
             background-repeat: no-repeat; background-position: right 15px top 50%; background-size: 10px auto;
         }
 
-        /* --- Recipe Specific Controls (Enhanced) --- */
+        /* --- Премиальный выбор языка --- */
+        .lang-native-fallback { display: none !important; }
+
+        .lang-picker {
+            position: relative;
+            z-index: 20;
+        }
+        .lang-picker-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: linear-gradient(145deg, var(--surface-light), var(--surface));
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .lang-picker-trigger:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+        }
+        .lang-picker-flag {
+            font-size: 1.2em;
+            line-height: 1;
+        }
+        .lang-picker-arrow {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            margin-left: 2px;
+            transition: transform 0.25s ease;
+        }
+        .lang-picker.open .lang-picker-arrow {
+            transform: rotate(180deg);
+        }
+        .lang-picker.open .lang-picker-trigger {
+            border-color: var(--primary);
+        }
+
+        .lang-picker-panel {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            min-width: 220px;
+            max-height: 320px;
+            overflow-y: auto;
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.05);
+            padding: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px) scale(0.97);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .lang-picker.open .lang-picker-panel {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        .lang-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        .lang-option:hover {
+            background: var(--surface-light);
+        }
+        .lang-option-name {
+            flex: 1;
+            font-size: 0.92em;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+        .lang-option-check {
+            font-size: 0.8em;
+            color: var(--primary);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        .lang-option.active {
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .lang-option.active .lang-option-name {
+            color: var(--primary);
+        }
+        .lang-option.active .lang-option-check {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+
         .recipes-controls { margin-bottom: 25px; }
         
         .search-container { position: relative; margin-bottom: 15px; }
@@ -2810,6 +2891,83 @@ adsgram-task {
         .form-group label { display: block; margin-bottom: 8px; font-size: 0.9em; color: var(--text-secondary); font-weight: 500; }
         .form-group input, .form-group select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--surface-light); color: var(--text-primary); outline: none; transition: border-color 0.2s; }
         .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+
+        /* --- Окно "Почему не понравилось?" --- */
+        .dislike-help-label {
+            margin-bottom: 12px;
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .dislike-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: var(--surface-light);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+        }
+        .radio-option:hover {
+            border-color: var(--primary);
+            transform: translateX(2px);
+        }
+        .radio-option span {
+            font-size: 0.95em;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .radio-option input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            background: var(--surface);
+            position: relative;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+        .radio-option input[type="radio"]::after {
+            content: "";
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.15s ease;
+        }
+        .radio-option input[type="radio"]:checked {
+            border-color: var(--primary);
+        }
+        .radio-option input[type="radio"]:checked::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .radio-option:has(input[type="radio"]:checked) {
+            border-color: var(--primary);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .dislike-comment-input {
+            display: none;
+            margin-top: 15px;
+        }
+        .dislike-submit-btn {
+            background-color: var(--error) !important;
+        }
+        .dislike-submit-btn:hover {
+            filter: brightness(1.1);
+        }
         
         /* Settings Switches */
         .sticker-switch-container { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-top: 1px solid var(--border-color); }

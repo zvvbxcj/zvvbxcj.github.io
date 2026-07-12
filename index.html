@@ -31,7 +31,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Axio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
     
     <script src="https://js.hcaptcha.com/1/api.js?render=explicit" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -88,30 +87,30 @@
             <span class="modal-close" onclick="hideModal('dislike-reason-modal')"><i class="fas fa-times"></i></span>
         </div>
         <div class="form-group">
-            <label style="margin-bottom: 10px; display: block; color: var(--text-secondary);">Помогите нам стать лучше:</label>
-            
-            <div class="dislike-options" style="display: flex; flex-direction: column; gap: 10px;">
+            <label class="dislike-help-label" data-translate="DislikeHelpLabel">Помогите нам стать лучше:</label>
+
+            <div class="dislike-options">
                 <label class="radio-option">
                     <input type="radio" name="dislike-reason" value="taste" checked>
-                    <span>Невкусно / Не понравился рецепт</span>
+                    <span data-translate="DislikeReasonTaste">Невкусно / Не понравился рецепт</span>
                 </label>
                 <label class="radio-option">
                     <input type="radio" name="dislike-reason" value="ingredients">
-                    <span>Сложные ингредиенты</span>
+                    <span data-translate="DislikeReasonIngredients">Сложные ингредиенты</span>
                 </label>
                 <label class="radio-option">
                     <input type="radio" name="dislike-reason" value="complexity">
-                    <span>Слишком сложно готовить</span>
+                    <span data-translate="DislikeReasonComplexity">Слишком сложно готовить</span>
                 </label>
                 <label class="radio-option">
                     <input type="radio" name="dislike-reason" value="other">
-                    <span>Другое</span>
+                    <span data-translate="DislikeReasonOther">Другое</span>
                 </label>
             </div>
-            
-            <input type="text" id="dislike-comment" class="styled-input" placeholder="Ваш комментарий (необязательно)" style="margin-top: 15px; display: none;">
+
+            <input type="text" id="dislike-comment" class="styled-input dislike-comment-input" placeholder="Ваш комментарий (необязательно)" data-translate-placeholder="DislikeCommentPlaceholder">
         </div>
-        <button class="btn btn-primary" onclick="confirmDislike()" style="background-color: var(--text-secondary);">Скрыть рецепт</button>
+        <button class="btn btn-primary dislike-submit-btn" onclick="confirmDislike()" data-translate="DislikeHideButton">Скрыть рецепт</button>
     </div>
 </div>
 
@@ -658,8 +657,8 @@
                     <button type="button" class="btn btn-secondary add-choice-option" onclick="hideModal('add-choice-modal'); openAiScanCamera()" style="display:flex; align-items:center; gap:14px; text-align:left; padding: 16px;">
                         <span style="width:44px; height:44px; flex-shrink:0; border-radius:12px; background: var(--surface-light); display:flex; align-items:center; justify-content:center; font-size:1.3em; color: var(--primary);"><i class="fas fa-wand-magic-sparkles"></i></span>
                         <span>
-                            <span style="display:block; font-weight:600; color: var(--text-primary);" data-translate="AddChoiceScanTitle">Через камеру (ИИ)</span>
-                            <span style="display:block; font-size:0.85em; color: var(--text-secondary);" data-translate="AddChoiceScanDesc">Сфотографировать продукт, пакет или чек</span>
+                            <span style="display:block; font-weight:600; color: var(--text-primary);" data-translate="AddChoiceScanTitle">Через камеру</span>
+                            <span style="display:block; font-size:0.85em; color: var(--text-secondary);" data-translate="AddChoiceScanDesc">Сфотографировать продукт или чек</span>
                         </span>
                     </button>
                 </div>
@@ -933,12 +932,76 @@
             
             <div class="settings-row">
                 <div class="sticker-label" data-translate="LanguageLabel">Язык</div>
-                <select id="language-select" class="styled-select" style="width: auto; padding: 5px 10px;">
+                <div class="lang-picker" id="lang-picker">
+                    <button type="button" class="lang-picker-trigger" id="lang-picker-trigger" onclick="toggleLangPicker()">
+                        <span class="lang-picker-flag" id="lang-picker-flag">🇷🇺</span>
+                        <span class="lang-picker-name" id="lang-picker-name">Русский</span>
+                        <i class="fas fa-chevron-down lang-picker-arrow"></i>
+                    </button>
+                    <div class="lang-picker-panel" id="lang-picker-panel">
+                        <div class="lang-option" data-lang="ru" onclick="selectLanguage('ru')">
+                            <span class="lang-picker-flag">🇷🇺</span>
+                            <span class="lang-option-name">Русский</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                        <div class="lang-option" data-lang="en" onclick="selectLanguage('en')">
+                            <span class="lang-picker-flag">🇬🇧</span>
+                            <span class="lang-option-name">English</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                        <div class="lang-option" data-lang="it" onclick="selectLanguage('it')">
+                            <span class="lang-picker-flag">🇮🇹</span>
+                            <span class="lang-option-name">Italiano</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                        <div class="lang-option" data-lang="es" onclick="selectLanguage('es')">
+                            <span class="lang-picker-flag">🇦🇷</span>
+                            <span class="lang-option-name">Español (AR)</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                        <div class="lang-option" data-lang="zh" onclick="selectLanguage('zh')">
+                            <span class="lang-picker-flag">🇨🇳</span>
+                            <span class="lang-option-name">中文</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                        <div class="lang-option" data-lang="de" onclick="selectLanguage('de')">
+                            <span class="lang-picker-flag">🇩🇪</span>
+                            <span class="lang-option-name">Deutsch</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                        <div class="lang-option" data-lang="ja" onclick="selectLanguage('ja')">
+                            <span class="lang-picker-flag">🇯🇵</span>
+                            <span class="lang-option-name">日本語</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                        <div class="lang-option" data-lang="ar" onclick="selectLanguage('ar')">
+                            <span class="lang-picker-flag">🇸🇦</span>
+                            <span class="lang-option-name">العربية</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                        <div class="lang-option" data-lang="hi" onclick="selectLanguage('hi')">
+                            <span class="lang-picker-flag">🇮🇳</span>
+                            <span class="lang-option-name">हिन्दी</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                        <div class="lang-option" data-lang="ko" onclick="selectLanguage('ko')">
+                            <span class="lang-picker-flag">🇰🇷</span>
+                            <span class="lang-option-name">한국어</span>
+                            <i class="fas fa-check lang-option-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <select id="language-select" class="lang-native-fallback" aria-hidden="true">
                     <option value="ru">Русский</option>
                     <option value="en">English</option>
                     <option value="it">Italiano</option>
                     <option value="es">Español (AR)</option>
                     <option value="zh">中文</option>
+                    <option value="de">Deutsch</option>
+                    <option value="ja">日本語</option>
+                    <option value="ar">العربية</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="ko">한국어</option>
                 </select>
             </div>
         </div>
@@ -5487,8 +5550,50 @@ function showModal(id) { document.getElementById(id).style.display = 'flex'; }
 
         function applyTheme(theme) { document.body.className = theme === 'light' ? 'light-theme' : ''; const themeSwitch = document.getElementById('theme-switch'); if(themeSwitch) themeSwitch.checked = theme === 'light'; }
 
+        const LANG_META = {
+            ru: { flag: '🇷🇺', name: 'Русский' },
+            en: { flag: '🇬🇧', name: 'English' },
+            it: { flag: '🇮🇹', name: 'Italiano' },
+            es: { flag: '🇦🇷', name: 'Español (AR)' },
+            zh: { flag: '🇨🇳', name: '中文' },
+            de: { flag: '🇩🇪', name: 'Deutsch' },
+            ja: { flag: '🇯🇵', name: '日本語' },
+            ar: { flag: '🇸🇦', name: 'العربية' },
+            hi: { flag: '🇮🇳', name: 'हिन्दी' },
+            ko: { flag: '🇰🇷', name: '한국어' }
+        };
+        const RTL_LANGS = ['ar'];
+
+        function toggleLangPicker() {
+            document.getElementById('lang-picker').classList.toggle('open');
+        }
+
+        function selectLanguage(lang) {
+            document.getElementById('lang-picker').classList.remove('open');
+            setLanguage(lang);
+            saveData(false);
+        }
+
+        function updateLangPickerUI(lang) {
+            const meta = LANG_META[lang] || LANG_META.ru;
+            const flagEl = document.getElementById('lang-picker-flag');
+            const nameEl = document.getElementById('lang-picker-name');
+            if (flagEl) flagEl.textContent = meta.flag;
+            if (nameEl) nameEl.textContent = meta.name;
+            document.querySelectorAll('.lang-option').forEach(opt => {
+                opt.classList.toggle('active', opt.getAttribute('data-lang') === lang);
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            const picker = document.getElementById('lang-picker');
+            if (picker && !picker.contains(e.target)) picker.classList.remove('open');
+        });
+
         function setLanguage(lang) {
             currentLang = lang; document.documentElement.lang = lang; document.getElementById('language-select').value = lang;
+            document.documentElement.dir = RTL_LANGS.includes(lang) ? 'rtl' : 'ltr';
+            updateLangPickerUI(lang);
             document.querySelectorAll('[data-translate]').forEach(el => { const key = el.getAttribute('data-translate'); const translation = translations[currentLang][key]; if (typeof translation === 'string') { el.textContent = translation; } });
             document.querySelectorAll('[data-translate-placeholder]').forEach(el => { const key = el.getAttribute('data-translate-placeholder'); const translation = translations[currentLang][key]; if (typeof translation === 'string') { el.placeholder = translation; } });
             updateHeader(); updateInventoryList(); updateRecipesList(); updateShoppingList(); updateAchievementsList();
